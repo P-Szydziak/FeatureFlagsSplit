@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,9 @@ namespace FeatureFlagsSplit.Controllers
         {
             _context = context;
         }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Meal>>> GetMeals() => await _context.Meal.ToListAsync();
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Meal>> GetMeal(int id) => await _context.Meal.FindAsync(id) ?? (ActionResult<Meal>) NotFound();
@@ -55,8 +59,9 @@ namespace FeatureFlagsSplit.Controllers
             return entityMeal.Entity.Id;
         }
 
+        [SplitFeatureGate(SplitFeatureFlags.DeleteMeal)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Meal>> DeleteMeal(int id)
+        public async Task<ActionResult> DeleteMeal(int id)
         {
             var meal = await _context.Meal.FindAsync(id);
             if (meal == null)
@@ -67,7 +72,7 @@ namespace FeatureFlagsSplit.Controllers
             _context.Meal.Remove(meal);
             await _context.SaveChangesAsync();
 
-            return meal;
+            return Ok();
         }
 
         private bool MealExists(int id) => _context.Meal.Any(meal => meal.Id == id);

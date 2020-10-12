@@ -26,21 +26,14 @@ namespace FeatureFlagsSplit
         {
             services.AddControllers();
 
-
-            var splitClient = new SplitFactory(_configuration["Split:ApiKey"]).Client();
-
-            try
-            {
-                splitClient.BlockUntilReady(10000);
-            }
-            catch
-            {
-                // ignored
-                // feature flags not working - all features turned off
-            }
-
-            services.AddSingleton<ISplitClient>(splitClient);
             services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("MyDemoInMemoryDb"));
+
+            services.AddSingleton<ISplitFactory, SplitFactory>(s => new SplitFactory(_configuration["Split:ApiKey"], new ConfigurationOptions()
+            {
+                StreamingEnabled = false,
+                FeaturesRefreshRate = 1,
+                SegmentsRefreshRate = 1
+            }));
 
             services.AddSwaggerGen(action =>
             {

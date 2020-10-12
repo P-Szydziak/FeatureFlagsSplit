@@ -47,7 +47,17 @@ namespace FeatureFlagsSplit
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            var splitClient = context.HttpContext.RequestServices.GetRequiredService<ISplitClient>();
+            var splitClient = context.HttpContext.RequestServices.GetRequiredService<ISplitFactory>().Client();
+
+            try
+            {
+                splitClient.BlockUntilReady(10000);
+            }
+            catch
+            {
+                context.Result = new StatusCodeResult(403);
+                return;
+            }
 
             var treatments = splitClient.GetTreatments("ANONYMOUS_USER", Features);
             var flag = RequirementType == RequirementType.All ? treatments.Values.All(v => v == "on") : treatments.Values.Any(v => v == "on");

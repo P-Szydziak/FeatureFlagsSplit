@@ -8,28 +8,28 @@ namespace FeatureFlagsSplit.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MealController : Controller
+    public class PantryController : Controller
     {
         private readonly AppDbContext _context;
 
-        public MealController(AppDbContext context)
+        public PantryController(AppDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Meal>>> GetMeals() => await _context.Meal.ToListAsync();
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts() => await _context.Products.ToListAsync();
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Meal>> GetMeal(int id) => await _context.Meal.FindAsync(id) ?? (ActionResult<Meal>) NotFound();
+        public async Task<ActionResult<Product>> GetProduct(int id) => await _context.Products.FindAsync(id) ?? (ActionResult<Product>) NotFound();
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMeal(int id, Meal meal)
+        public async Task<IActionResult> PutProduct(int id, Product product)
         {
-            if (id != meal.Id)
+            if (id != product.Id)
                 return BadRequest();
 
-            _context.Entry(meal).State = EntityState.Modified;
+            _context.Entry(product).State = EntityState.Modified;
 
             try
             {
@@ -37,7 +37,7 @@ namespace FeatureFlagsSplit.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MealExists(id))
+                if (!ProductExists(id))
                 {
                     return NotFound();
                 }
@@ -51,30 +51,30 @@ namespace FeatureFlagsSplit.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> PostMeal(Meal meal)
+        public async Task<ActionResult<int>> PostProduct(Product product)
         { 
-            var entityMeal = await _context.Meal.AddAsync(meal);
+            var entityProduct = await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
 
-            return entityMeal.Entity.Id;
+            return entityProduct.Entity.Id;
         }
 
         [SplitFeatureGate(SplitFeatureFlags.DeleteMeal)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteMeal(int id)
+        public async Task<ActionResult> DeleteProduct(int id)
         {
-            var meal = await _context.Meal.FindAsync(id);
-            if (meal == null)
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
             {
                 return NotFound();
             }
 
-            _context.Meal.Remove(meal);
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
             return Ok();
         }
 
-        private bool MealExists(int id) => _context.Meal.Any(meal => meal.Id == id);
+        private bool ProductExists(int id) => _context.Products.Any(meal => meal.Id == id);
     }
 }

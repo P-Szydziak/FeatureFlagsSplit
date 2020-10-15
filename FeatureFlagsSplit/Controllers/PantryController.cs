@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FeatureFlagsSplit.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,7 @@ namespace FeatureFlagsSplit.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id) => await _context.Products.FindAsync(id) ?? (ActionResult<Product>) NotFound();
 
+        [SplitFeatureGate(SplitFeatureFlags.UpdateProduct)]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
@@ -59,7 +61,6 @@ namespace FeatureFlagsSplit.Controllers
             return entityProduct.Entity.Id;
         }
 
-        [SplitFeatureGate(SplitFeatureFlags.DeleteMeal)]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteProduct(int id)
         {
